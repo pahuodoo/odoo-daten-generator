@@ -9,8 +9,21 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# eMudhra/emSign CA compromise (Oct 2026): pip also consults the system root
+# store. Distrust emSign ECC Root CA - G3 there explicitly, so the fix does not
+# depend on the base image already carrying an updated ca-certificates package.
+# No-op once Debian has dropped the root.
+RUN sed -i 's|^mozilla/emSign_ECC_Root_CA_-_G3\.crt$|!&|' /etc/ca-certificates.conf \
+    && update-ca-certificates --fresh
+
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# pip vendors its own certifi; releases before 26.2.2 still trust the compromised
+# eMudhra/emSign root (see requirements.txt). Upgrade pip first so the dependency
+# download below already runs over the fixed trust store. Rebuild with
+# `docker compose build --pull --no-cache` so neither the base image's system CA
+# store nor a cached install layer survives.
+RUN pip install --no-cache-dir "pip==26.2.2" \
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
