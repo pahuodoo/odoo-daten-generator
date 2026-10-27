@@ -14,8 +14,8 @@ requests==2.33.1
 # --- TLS root store (transitive via requests/httpx, pinned explicitly) ---
 # >= 2026.10.19 drops emSign ECC Root CA - G3 after the eMudhra intermediate key
 # compromise (Mozilla bug 2083449, GHSA-6q48-6c7w-9gw2). Older bundles let anyone
-# holding those keys impersonate Odoo/Groq/Gemini/PyPI. Never pin below this.
-certifi==2026.10.19
+# holding those keys impersonate Odoo/Groq/Gemini/PyPI. Floor, not a pin: certifi is pure security data and should float up.
+certifi>=2026.10.19
 
 # --- PDF generation (S6) ---
 fpdf2==2.8.7
